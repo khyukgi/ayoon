@@ -1,0 +1,248 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled4.ipynb",
+      "provenance": [],
+      "private_outputs": true,
+      "collapsed_sections": [],
+      "toc_visible": true,
+      "mount_file_id": "14ofca9oqfUq5fTxlcZSXJ96Jg8tY1-tP",
+      "authorship_tag": "ABX9TyPL94SBvaolp5q4mOJ+ivF/",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "accelerator": "GPU"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/khyukgi/ayoon/blob/master/Prostate_DL_Test_20200825\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "0v_oHXgQcT9N",
+        "colab_type": "text"
+      },
+      "source": [
+        "# **Classification Test using Deep Learning**\n",
+        "\n",
+        "by Hyug-Gi Kim, Ph.D.\n",
+        "khyukgi@gmail.com"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ziZBrbbDc5e7",
+        "colab_type": "text"
+      },
+      "source": [
+        "1. Load Dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "vylDb8cudbMM",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "!ls"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "vtWBaOCxbxkt",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "!unzip Prostate_DWI.zip"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "UJQ5oYOdemsy",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# import package\n",
+        "import os\n",
+        "import numpy as np\n",
+        "from PIL import Image\n",
+        "import matplotlib.pyplot as plt"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "SpB4L2noeyi5",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "dataDir = 'Prostate_DWI' # 데이터 위치\n",
+        "classNames = sorted(os.listdir(dataDir)) # 각 클래스의 이름들\n",
+        "numClass = len(classNames)               # 클래스 개수\n",
+        "\n",
+        "###\n",
+        "imageFiles = [[os.path.join(dataDir, classNames[i], x) for x in os.listdir(os.path.join(dataDir, classNames[i]))] \n",
+        "              for i in range(numClass)]                   # 각 클래스별 파일 이름들\n",
+        "numEach = [len(imageFiles[i]) for i in range(numClass)]   # 각 클래스 별 파일 갯수\n",
+        "\n",
+        "###\n",
+        "imageFilesList = [] # 모든 파일이름\n",
+        "imageClass = [] # 각각의 파일들에 대한 클래스\n",
+        "for i in range(numClass):\n",
+        "  imageFilesList.extend(imageFiles[i])\n",
+        "  imageClass.extend([i]*numEach[i])\n",
+        "\n",
+        "### \n",
+        "numTotal = len(imageClass) # 전체 파일 갯수\n",
+        "imageWidth, imageHeight = Image.open(imageFilesList[0]).size # 각 영상의 사이즈(width, height)\n",
+        "\n",
+        "###\n",
+        "print(\"There are\",numTotal,\"images in\",numClass,\"distinct categories\")\n",
+        "print(\"Label names:\",classNames)\n",
+        "print(\"Label counts:\",numEach)\n",
+        "print(\"Image dimensions:\",imageWidth,\"x\",imageHeight)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "1aswvJOOfJok",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# 이미지 리스트 살펴보기\n",
+        "imageFilesList[0:10]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BMjB2jU3fNdz",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "# 전체 이미지 중 9개를 랜덤으로 골라 3x3으로 레이블과 함께 그리기\n",
+        "# -- 여러번 실행하며 이미지들을 살펴보세요 --\n",
+        "\n",
+        "plt.subplots(3,3,figsize=(8,8))\n",
+        "for i,k in enumerate(np.random.randint(numTotal, size=9)): \n",
+        "    im = Image.open(imageFilesList[k])                      \n",
+        "    arr = np.array(im)\n",
+        "    plt.subplot(3,3,i+1)\n",
+        "    plt.title(classNames[imageClass[k]], fontsize=14)\n",
+        "    plt.imshow(arr,cmap='gray',vmin=0,vmax=255)\n",
+        "plt.tight_layout()\n",
+        "plt.show()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "x4fyKQqafVCa",
+        "colab_type": "text"
+      },
+      "source": [
+        "**Load CNN model- VGG16**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wsByHzWTfT0K",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "from keras.preprocessing.image import load_img\n",
+        "from keras.preprocessing.image import img_to_array\n",
+        "\n",
+        "# VGG16 모델을 이용해 prediction 하는 함수\n",
+        "def predict_vgg16(model, filename):\n",
+        "    # 이미지 파일을 읽고 화면에 표시\n",
+        "    image = load_img(filename)\n",
+        "    display(image)\n",
+        "\n",
+        "    # 모델 사이즈로 이미지 파일을 읽기\n",
+        "    image = load_img(filename, target_size=(224, 224))\n",
+        "\n",
+        "    # 이미지 데이터를 numpy로 변환\n",
+        "    image = img_to_array(image)\n",
+        "\n",
+        "    # vgg16.preprocess_input()을 호출하기 위해 차원을 조정\n",
+        "    # 보통 모델을 여러 이미지를 한번에 호출. \n",
+        "    # 맨 앞의 1 : 이미지 갯수가 1개라는 것.\n",
+        "    # 두번째 224 : 가로\n",
+        "    # 세번째 224 : 세로\n",
+        "    # 네번째 3 : R, G, B 3개\n",
+        "    image = image.reshape((1, 224, 224, 3))\n",
+        "\n",
+        "    # VGG16 모델 호출을 위해 데이터 전처리.\n",
+        "    # -255 ~ 255 사이 값으로 정규화한다.\n",
+        "    # 그리고 RGB를 BGR순으로 바꾼다.\n",
+        "    image = vgg16.preprocess_input(image)\n",
+        "\n",
+        "    # 이미지를 모델에 적용\n",
+        "    yhat = model.predict(image)\n",
+        "\n",
+        "    # 모델 적용된 결과를 파싱\n",
+        "    label = vgg16.decode_predictions(yhat)\n",
+        "    \n",
+        "    # 가장 확률이 높은 결과를 획득\n",
+        "    label = label[0][0]\n",
+        "\n",
+        "    # 라벨과 라벨을 예측한 확률을 출력\n",
+        "    print('%s (%.2f%%)' % (label[1], label[2]*100))"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ymGHLQuRfeSJ",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
